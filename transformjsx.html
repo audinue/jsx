@@ -1,0 +1,14 @@
+<meta http-equiv="x-ua-compatible" content="ie=5">
+
+<script src="transformjsx.js"></script>
+
+<script>
+    var input = '/* @jsx React.createElement */\n'
+        + 'function App() { //cool<p>Hahah</p>\n'
+        + '  /<p>/\n'
+        + '  return <p>Hello {items.map(function (item) {\n'
+        + '    return <b><i>{item}</i><img/></b>\n'
+        + '})}!</p>\n'
+        + '}'
+    alert(transformJSX(input))
+</script>
