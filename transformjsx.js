@@ -25,16 +25,14 @@ function transformJSX (input, factory) {
     }
     var output = []
     var offset = 0
-    function pushJS () {
-        while (true) {
-            var token = tokens[offset++]
-            if (token === undefined) {
-                break
-            } else if (token === '<') {
-                pushElement()
-            } else {
-                output.push(token)
-            }
+    while (true) {
+        var token = tokens[offset++]
+        if (token === undefined) {
+            break
+        } else if (token === '<') {
+            pushElement()
+        } else {
+            output.push(token)
         }
     }
     function pushElement () {
@@ -53,12 +51,56 @@ function transformJSX (input, factory) {
         var next = false
         while (true) {
             var token = tokens[offset++]
-            if (token === '/>') {
+            if (token === undefined) {
+                throw new Error()
+            } else if (token === '/>') {
                 output.push('})')
                 break
             } else if (token === '>') {
                 output.push('},["')
-                pushChildren()
+                while (true) {
+                    var token = tokens[offset++]
+                    if (token === undefined) {
+                        throw new Error()
+                    } else if (token === '<') {
+                        output.push('",')
+                        pushElement()
+                        output.push(',"')
+                    } else if (token === '{') {
+                        output.push('",')
+                        pushExpr(false)
+                        output.push(',"')
+                    } else if (token === '</') {
+                        output.push('"])')
+                        while (true) {
+                            var token = tokens[offset++]
+                            if (token === '>') {
+                                break
+                            }
+                        }
+                        break
+                    } else {
+                        for (var i = 0; i < token.length; i++) {
+                            var char = token.charAt(i)
+                            switch (char) {
+                                case '\\':
+                                    output.push('\\\\')
+                                    break
+                                case '"':
+                                    output.push('\\"')
+                                    break
+                                case '\r':
+                                    output.push('\\r')
+                                    break
+                                case '\n':
+                                    output.push('\\n')
+                                    break
+                                default:
+                                    output.push(char)
+                            }
+                        }
+                    }
+                }
                 break
             } else if (token >= 'a' && token <= 'z') {
                 if (next) {
@@ -78,8 +120,6 @@ function transformJSX (input, factory) {
                 } else {
                     output.push('true')
                 }
-            } else {
-                throw new Error()
             }
         }
     }
@@ -103,54 +143,5 @@ function transformJSX (input, factory) {
             }
         }
     }
-    function pushChildren () {
-        while (true) {
-            var token = tokens[offset++]
-            if (token === undefined) {
-                throw new Error()
-            } else if (token === '<') {
-                output.push('",')
-                pushElement()
-                output.push(',"')
-            } else if (token === '{') {
-                output.push('",')
-                pushExpr(false)
-                output.push(',"')
-            } else if (token === '</') {
-                output.push('"])')
-                while (true) {
-                    var token = tokens[offset++]
-                    if (token === '>') {
-                        break
-                    }
-                }
-                break
-            } else {
-                pushString(token)
-            }
-        }
-    }
-    function pushString (token) {
-        for (var i = 0; i < token.length; i++) {
-            var char = token.charAt(i)
-            switch (char) {
-                case '\\':
-                    output.push('\\\\')
-                    break
-                case '"':
-                    output.push('\\"')
-                    break
-                case '\r':
-                    output.push('\\r')
-                    break
-                case '\n':
-                    output.push('\\n')
-                    break
-                default:
-                    output.push(char)
-            }
-        }
-    }
-    pushJS()
     return output.join('')
 }
