@@ -1,8 +1,68 @@
-<script src="jsx.js"></script>
-<script>
-  const code = JSX.parse(`
-    const HelloWorld = () =>
-      <p>Hello world!</p>
-  `)
-  console.log(code)
+<meta http-equiv="x-ua-compatible" content="ie=5">
+
+<script src="update.js"></script>
+<script src="transformjsx.js"></script>
+<script src="executejsx.js"></script>
+
+<script type="text/jsx">
+    onerror = alert
+
+    var count = 0
+    var name = ''
+
+    function updateCount () {
+        count++
+    }
+
+    function updateName () {
+        name = this.value
+    }
+
+    function Counter () {
+        return <button onclick={updateCount}>{count}</button>
+    }
+
+    function getCallback (props) {
+        return typeof props.children[0] === 'function'
+            ? props.children[0]
+            : props.children[1]
+    }
+
+    function If (props) {
+        return props.condition ? getCallback(props)() : null
+    }
+
+    function Repeat (props) {
+        var result = []
+        for (var i = 0; i < props.source.length; i++) {
+            result.push(getCallback(props)(props.source[i], i))
+        }
+        return result
+    }
+
+    function main () {
+        return <div>
+            <p>Name: {name}</p>
+            <Repeat source={[1, 2, 3, 4, 5, 6]}>
+                {function (item) {
+                    return <If condition={item % 2 == 0}>
+                        {function() {
+                            return <p>{item}</p>
+                        }}
+                    </If>
+                }}
+            </Repeat>
+            <p>
+                Name:
+                <input
+                    value={name}
+                    onpropertychange={updateName}
+                    onchange={updateName}
+                    oninput={updateName}/>
+            </p>
+            <Counter />
+            <Counter />
+            <Counter />
+        </div>
+    }
 </script>

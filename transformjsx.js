@@ -4,7 +4,8 @@ function transformJSX (input, factory) {
     if (match) {
         factory = match[1]
     }
-    var pattern = /\/>|\/(\\.|[^\/])+\/|\/\/[^\r\n]+|\/\*.*?\*\/|"(\\.|[^"])*"|'(\\.|[^'])+'|<\/|[<>{}=]|\w+/g
+
+    var pattern = /\/>|\/(\\.|[^\/])+\/|\/\/[^\r\n]*|\/\*.*?\*\/|"(\\.|[^"])*"|'(\\.|[^'])*'|<\/|[<>{}=]|\w+/g
     var tokens = []
     var lastIndex = RegExp.lastIndex = 0
     while (true) {
@@ -23,8 +24,10 @@ function transformJSX (input, factory) {
     if (token !== '') {
         tokens.push(token)
     }
+
     var output = []
     var offset = 0
+
     while (true) {
         var token = tokens[offset++]
         if (token === undefined) {
@@ -35,6 +38,9 @@ function transformJSX (input, factory) {
             output.push(token)
         }
     }
+
+    return output.join('')
+
     function pushElement () {
         var token = tokens[offset++]
         if (token >= 'A' && token <= 'Z') {
@@ -47,6 +53,7 @@ function transformJSX (input, factory) {
             output.push('<', token)
         }
     }
+
     function pushProps () {
         var next = false
         while (true) {
@@ -54,7 +61,7 @@ function transformJSX (input, factory) {
             if (token === undefined) {
                 throw new Error()
             } else if (token === '/>') {
-                output.push('})')
+                output.push('},[])')
                 break
             } else if (token === '>') {
                 output.push('},["')
@@ -63,15 +70,27 @@ function transformJSX (input, factory) {
                     if (token === undefined) {
                         throw new Error()
                     } else if (token === '<') {
-                        output.push('",')
+                        if (output[output.length - 1] === '},["') {
+                            output[output.length - 1] = '},['
+                        } else {
+                            output.push('",')
+                        }
                         pushElement()
                         output.push(',"')
                     } else if (token === '{') {
-                        output.push('",')
+                        if (output[output.length - 1] === '},["') {
+                            output[output.length - 1] = '},['
+                        } else {
+                            output.push('",')
+                        }
                         pushExpr(false)
                         output.push(',"')
                     } else if (token === '</') {
-                        output.push('"])')
+                        if (output[output.length - 1] === ',"') {
+                            output[output.length - 1] = '])'
+                        } else {
+                            output.push('"])')
+                        }
                         while (true) {
                             var token = tokens[offset++]
                             if (token === '>') {
@@ -80,23 +99,28 @@ function transformJSX (input, factory) {
                         }
                         break
                     } else {
-                        for (var i = 0; i < token.length; i++) {
-                            var char = token.charAt(i)
-                            switch (char) {
-                                case '\\':
-                                    output.push('\\\\')
-                                    break
-                                case '"':
-                                    output.push('\\"')
-                                    break
-                                case '\r':
-                                    output.push('\\r')
-                                    break
-                                case '\n':
-                                    output.push('\\n')
-                                    break
-                                default:
-                                    output.push(char)
+                        if (token.match(/^\s+$/)) {
+                            output.push(' ')
+                        } else {
+                            token = token.replace(/^\s+|\s+$/g, ' ')
+                            for (var i = 0; i < token.length; i++) {
+                                var char = token.charAt(i)
+                                switch (char) {
+                                    case '\\':
+                                        output.push('\\\\')
+                                        break
+                                    case '"':
+                                        output.push('\\"')
+                                        break
+                                    case '\r':
+                                        output.push('\\r')
+                                        break
+                                    case '\n':
+                                        output.push('\\n')
+                                        break
+                                    default:
+                                        output.push(char)
+                                }
                             }
                         }
                     }
@@ -123,6 +147,7 @@ function transformJSX (input, factory) {
             }
         }
     }
+
     function pushExpr (next) {
         while (true) {
             var token = tokens[offset++]
@@ -143,5 +168,4 @@ function transformJSX (input, factory) {
             }
         }
     }
-    return output.join('')
 }
