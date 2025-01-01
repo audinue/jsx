@@ -1,5 +1,6 @@
 {
   "name": "@audinue/jsx",
+  "version": "0.0.1",
   "module": "index.js",
   "types": "index.d.ts"
 }
