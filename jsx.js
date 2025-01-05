@@ -6,9 +6,9 @@ class Element {
   }
 }
 
-class Fragment {}
+const Fragment = {}
 
-class Doctype {}
+const Doctype = {}
 
 class Unsafe extends String {}
 

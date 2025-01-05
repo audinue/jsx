@@ -1,4 +1,4 @@
-import { Fragment, createElement } from './jsx'
+import { Fragment, createElement } from './jsx.js'
 
 let jsx = (tag, { children, ...attributes }) =>
   createElement(tag, attributes, children)
