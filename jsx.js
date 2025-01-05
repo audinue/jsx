@@ -38,6 +38,8 @@ let replacement = char =>
 let quote = value => {
   if (value === null || value === undefined || value === false) {
     return ''
+  } else if (value instanceof Unsafe) {
+    return value
   } else {
     return String(value).replace(/["&<]/g, replacement)
   }
@@ -59,11 +61,7 @@ let renderProps = props => {
 }
 
 let renderChild = child =>
-  child instanceof Element
-    ? render(child)
-    : child instanceof Unsafe
-    ? child
-    : quote(child)
+  child instanceof Element ? render(child) : quote(child)
 
 let join = array => array.join('')
 
@@ -82,23 +80,13 @@ let render = ({ tag, props, children }) => {
       tag +
       renderProps(props) +
       '>' +
-      (tag in voidTags
-        ? ''
-        : ('html' in props ? props.html : '') +
-          renderChildren(children) +
-          '</' +
-          tag +
-          '>')
+      (tag in voidTags ? '' : renderChildren(children) + '</' + tag + '>')
     )
   }
 }
 
 let renderChildAsync = child =>
-  child instanceof Element
-    ? renderAsync(child)
-    : child instanceof Unsafe
-    ? child
-    : quote(child)
+  child instanceof Element ? renderAsync(child) : quote(child)
 
 let renderChildrenAsync = children =>
   Promise.all(children.map(renderChildAsync)).then(join)
@@ -124,11 +112,7 @@ let renderAsync = async ({ tag, props, children }) => {
       '>' +
       (tag in voidTags
         ? ''
-        : ('html' in props ? props.html : '') +
-          (await renderChildrenAsync(children)) +
-          '</' +
-          tag +
-          '>')
+        : (await renderChildrenAsync(children)) + '</' + tag + '>')
     )
   }
 }
