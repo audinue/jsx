@@ -96,12 +96,6 @@ let renderAsync = async ({ tag, props, children }) => {
     return '<!DOCTYPE html>'
   } else if (tag === Fragment) {
     return renderChildrenAsync(children)
-  } else if (tag === Context) {
-    return renderChildrenAsync(
-      children,
-      { ...context, ...props.value },
-      context
-    )
   } else if (typeof tag === 'function') {
     return renderAsync(await tag({ ...props, children }))
   } else {
