@@ -1,9 +1,14 @@
-import { Fragment, Element } from "./jsx";
+import { Html5 } from './html5'
+import { Element, Fragment } from './jsx'
 
-export const jsx: (
+export let jsx: (
   tag: string,
   props: { children: any[]; [key: string]: any },
   key?: any
-) => Element;
+) => Element
 
-export { Fragment, jsx as jsxs, jsx as jsxDEV };
+export namespace JSX {
+  export interface IntrinsicElements extends Html5 {}
+}
+
+export { Fragment, jsx as jsxDEV, jsx as jsxs }

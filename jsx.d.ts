@@ -1,25 +1,27 @@
+import { Html5 } from './html5'
+
 export class Element {
-  tag: string;
-  props: Record<string, any>;
-  children: any[];
+  tag: string
+  props: Record<string, any>
+  children: any[]
 }
 
-export const Fragment: () => Element;
+export let Doctype: () => Element
 
-export const Context: (props: { value: Record<string, any> }) => Element;
+export let Fragment: () => Element
 
-export const createElement: (
+export let createElement: (
   tag: string,
   props: Record<string, any>,
   children: any[]
-) => Element;
+) => Element
 
-export const render: (
-  element: Element,
-  context?: Record<string, any>
-) => string;
+export let unsafe: (value: any) => any
 
-export const renderAsync: (
-  element: Element,
-  context?: Record<string, any>
-) => Promise<string>;
+export let render: (element: Element) => string
+
+export let renderAsync: (element: Element) => Promise<string>
+
+export namespace createElement.JSX {
+  export interface IntrinsicElements extends Html5 {}
+}
